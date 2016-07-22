@@ -50,6 +50,7 @@ public class OperationSupport {
 
   public static final MediaType JSON = MediaType.parse("application/json");
   public static final MediaType JSON_PATCH = MediaType.parse("application/json-patch+json");
+  public static final MediaType MERGE_PATCH = MediaType.parse("application/merge-patch+json");
   protected static final ObjectMapper JSON_MAPPER = new ObjectMapper();
   protected static final ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory());
   private static final String CLIENT_STATUS_FLAG = "CLIENT_STATUS_FLAG";
@@ -214,8 +215,14 @@ public class OperationSupport {
   }
 
   protected <T> T handlePatch(T current, T updated, Class<T> type) throws ExecutionException, InterruptedException, KubernetesClientException, IOException {
-    JsonNode diff = JsonDiff.asJson(patchMapper().valueToTree(current), patchMapper().valueToTree(updated));
-    RequestBody body = RequestBody.create(JSON_PATCH, JSON_MAPPER.writeValueAsString(diff));
+    RequestBody body;
+    if (MERGE_PATCH.toString().equals(config.getPatchMethod())) {
+      // TODO optimize
+      body = RequestBody.create(MERGE_PATCH, JSON_MAPPER.writeValueAsString(updated));
+    } else {
+      JsonNode diff = JsonDiff.asJson(patchMapper().valueToTree(current), patchMapper().valueToTree(updated));
+      body = RequestBody.create(JSON_PATCH, JSON_MAPPER.writeValueAsString(diff));
+    }
     Request.Builder requestBuilder = new Request.Builder().patch(body).url(getResourceUrl(checkNamespace(updated), checkName(updated)));
     return handleResponse(requestBuilder, 200, type);
   }

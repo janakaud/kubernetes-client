@@ -71,6 +71,7 @@ public class Config {
   public static final String KUBERNETES_HTTPS_PROXY = "https.proxy";
   public static final String KUBERNETES_ALL_PROXY = "all.proxy";
   public static final String KUBERNETES_NO_PROXY = "no.proxy";
+  public static final String KUBERNETES_PATCH_METHOD = "patch.method";
 
   public static final String KUBERNETES_USER_AGENT = "fabric8-kubernetes-client/" + Version.clientVersion() ;
 
@@ -107,6 +108,7 @@ public class Config {
   private String httpsProxy;
   private String[] noProxy;
   private String userAgent;
+  private String patchMethod;
 
   private Map<Integer, String> errorMessages = new HashMap<>();
 
@@ -127,7 +129,7 @@ public class Config {
   }
 
   @Buildable(builderPackage = "io.fabric8.kubernetes.api.builder", editableEnabled = false)
-  public Config(String masterUrl, String apiVersion, String namespace, boolean trustCerts, String caCertFile, String caCertData, String clientCertFile, String clientCertData, String clientKeyFile, String clientKeyData, String clientKeyAlgo, String clientKeyPassphrase, String username, String password, String oauthToken, int watchReconnectInterval, int watchReconnectLimit, int connectionTimeout, int requestTimeout, long rollingTimeout, long scaleTimeout, int loggingInterval, String httpProxy, String httpsProxy, String[] noProxy, Map<Integer, String> errorMessages, String userAgent) {
+  public Config(String masterUrl, String apiVersion, String namespace, boolean trustCerts, String caCertFile, String caCertData, String clientCertFile, String clientCertData, String clientKeyFile, String clientKeyData, String clientKeyAlgo, String clientKeyPassphrase, String username, String password, String oauthToken, int watchReconnectInterval, int watchReconnectLimit, int connectionTimeout, int requestTimeout, long rollingTimeout, long scaleTimeout, int loggingInterval, String httpProxy, String httpsProxy, String[] noProxy, Map<Integer, String> errorMessages, String userAgent, String patchMethod) {
     this.trustCerts = trustCerts;
     this.masterUrl = masterUrl;
     this.apiVersion = apiVersion;
@@ -156,6 +158,7 @@ public class Config {
     this.noProxy= noProxy;
     this.errorMessages = errorMessages;
     this.userAgent = userAgent;
+    this.patchMethod = patchMethod;
 
     if (!this.masterUrl.toLowerCase().startsWith(HTTP_PROTOCOL_PREFIX) && !this.masterUrl.startsWith(HTTPS_PROTOCOL_PREFIX)) {
       this.masterUrl = (SSLUtils.isHttpsAvailable(this) ? HTTPS_PROTOCOL_PREFIX : HTTP_PROTOCOL_PREFIX) + this.masterUrl;
@@ -180,6 +183,7 @@ public class Config {
     config.setClientKeyAlgo(Utils.getSystemPropertyOrEnvVar(KUBERNETES_CLIENT_KEY_ALGO_SYSTEM_PROPERTY, config.getClientKeyAlgo()));
     config.setClientKeyPassphrase(Utils.getSystemPropertyOrEnvVar(KUBERNETES_CLIENT_KEY_PASSPHRASE_SYSTEM_PROPERTY, new String(config.getClientKeyPassphrase())));
     config.setUserAgent(Utils.getSystemPropertyOrEnvVar(KUBERNETES_USER_AGENT, config.getUserAgent()));
+    config.setPatchMethod(Utils.getSystemPropertyOrEnvVar(KUBERNETES_PATCH_METHOD, config.getPatchMethod()));
 
     config.setOauthToken(Utils.getSystemPropertyOrEnvVar(KUBERNETES_OAUTH_TOKEN_SYSTEM_PROPERTY, config.getOauthToken()));
     config.setUsername(Utils.getSystemPropertyOrEnvVar(KUBERNETES_AUTH_BASIC_USERNAME_SYSTEM_PROPERTY, config.getUsername()));
@@ -568,5 +572,13 @@ public class Config {
 
   public void setUserAgent(String userAgent) {
     this.userAgent = userAgent;
+  }
+
+  public String getPatchMethod() {
+    return patchMethod;
+  }
+
+  public void setPatchMethod(String patchMethod) {
+    this.patchMethod = patchMethod;
   }
 }
